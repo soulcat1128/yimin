@@ -362,8 +362,18 @@
             // 建立語音
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.9;
-            utterance.pitch = 1.0;
+            
+            // 依語言調整語速和音調，讓聲音更自然
+            if (lang === 'zh-TW') {
+                utterance.rate = 0.85;  // 中文稍慢一點
+                utterance.pitch = 1.1;  // 音調稍高，更有活力
+            } else if (lang === 'ja-JP') {
+                utterance.rate = 0.9;
+                utterance.pitch = 1.05;
+            } else {
+                utterance.rate = 0.95;
+                utterance.pitch = 1.0;
+            }
             
             // 選擇最佳語音
             let voice = getBestVoice(lang);
