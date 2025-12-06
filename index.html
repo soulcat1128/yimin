@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>開鑿基石的採礦科 | The Foundation of Mining</title>
-    <!-- ResponsiveVoice 語音服務（免費版） -->
-    <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -313,55 +311,68 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        // 語言對應 ResponsiveVoice 的語音名稱
-        const voiceMap = {
-            'zh-TW': 'Chinese Taiwan Female',
-            'en-US': 'US English Female',
-            'ja-JP': 'Japanese Female'
-        };
+        let voices = [];
+        
+        // 載入語音列表
+        function loadVoices() {
+            voices = window.speechSynthesis.getVoices();
+            console.log('載入語音數量:', voices.length);
+        }
+        
+        // 初始化語音
+        if ('speechSynthesis' in window) {
+            loadVoices();
+            if (speechSynthesis.onvoiceschanged !== undefined) {
+                speechSynthesis.onvoiceschanged = loadVoices;
+            }
+        }
 
         function speakText(btn, lang) {
             // 停止之前的播放
-            stopSpeech();
+            window.speechSynthesis.cancel();
             
             let text = btn.parentElement.nextElementSibling.innerText;
             
             // 更新按鈕狀態
             let allBtns = document.querySelectorAll('.speak-btn');
-            allBtns.forEach(b => b.style.opacity = "1");
+            allBtns.forEach(b => {
+                b.style.opacity = "1";
+                b.textContent = b.textContent.replace('⏸', '🔊');
+            });
             btn.style.opacity = "0.5";
             
-            // 使用 ResponsiveVoice（音質較好）
-            let voiceName = voiceMap[lang] || 'US English Female';
-            
-            responsiveVoice.speak(text, voiceName, {
-                onend: function() {
-                    btn.style.opacity = "1";
-                },
-                onerror: function() {
-                    btn.style.opacity = "1";
-                    // 如果 ResponsiveVoice 失敗，回退到瀏覽器內建語音
-                    fallbackSpeak(text, lang, btn);
-                }
-            });
-        }
-
-        // 備用：瀏覽器內建語音
-        function fallbackSpeak(text, lang, btn) {
+            // 建立語音
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.onend = function() { btn.style.opacity = "1"; };
+            utterance.rate = 0.9; // 稍微慢一點，更清楚
+            utterance.pitch = 1;
+            
+            // 嘗試找到最佳語音
+            if (voices.length > 0) {
+                let voice = voices.find(v => v.lang === lang) || 
+                            voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+                if (voice) {
+                    utterance.voice = voice;
+                    console.log('使用語音:', voice.name);
+                }
+            }
+            
+            utterance.onend = function() {
+                btn.style.opacity = "1";
+            };
+            
+            utterance.onerror = function(e) {
+                console.log('語音錯誤:', e);
+                btn.style.opacity = "1";
+                alert('語音播放失敗，請確認手機沒有開啟靜音模式');
+            };
+            
+            // 播放
             window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
-            // 停止 ResponsiveVoice
-            if (typeof responsiveVoice !== 'undefined') {
-                responsiveVoice.cancel();
-            }
-            // 停止瀏覽器內建語音
             window.speechSynthesis.cancel();
-            
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
         }
