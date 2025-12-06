@@ -311,64 +311,14 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        let voices = [];
         let currentAudio = null;
         
-        // 中文音檔對應（之後可以擴充為 5 個檔案）
-        const zhAudioFiles = {
-            1: 'zh.mp3',  // 目前只有一個檔案，之後可改為 zh-1.mp3, zh-2.mp3 等
-            2: 'zh.mp3',
-            3: 'zh.mp3',
-            4: 'zh.mp3',
-            5: 'zh.mp3'
+        // 音檔對應表
+        const audioFiles = {
+            'zh-TW': ['zh1.mp3', 'zh2.mp3', 'zh3.mp3', 'zh4.mp3', 'zh5.mp3'],
+            'en-US': ['en1.mp3', 'en2.mp3', 'en3.mp3', 'en4.mp3', 'en5.mp3'],
+            'ja-JP': ['jp1.mp3', 'jp2.mp3', 'jp3.mp3', 'jp4.mp3', 'jp5.mp3']
         };
-        
-        // 載入語音
-        function loadVoices() {
-            voices = window.speechSynthesis.getVoices();
-        }
-        loadVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-        
-        // 找最佳語音
-        function getBestVoice(lang) {
-            if (voices.length === 0) {
-                voices = window.speechSynthesis.getVoices();
-            }
-            
-            // 優先選擇的語音名稱（包含微軟高品質語音）
-            const preferredVoices = {
-                'zh-TW': [
-                    'Microsoft Hanhan',      // Windows 繁中女聲（較自然）
-                    'Microsoft Yating',      // Windows 繁中女聲
-                    'Microsoft Zhiwei',      // Windows 繁中男聲
-                    'Xiaoxiao',              // 微軟曉曉（非常自然）
-                    'Yunxi',                 // 微軟雲希
-                    'Mei-Jia',               // iPhone 繁中
-                    'Ting-Ting',             // iPhone 簡中
-                    'zh-TW', 'zh_TW', 'zh-CN', 'zh'
-                ],
-                'en-US': ['Samantha', 'Karen', 'Daniel', 'Microsoft Zira', 'en-US', 'en_US', 'en-GB'],
-                'ja-JP': ['Kyoko', 'O-Ren', 'Microsoft Haruka', 'ja-JP', 'ja_JP', 'ja']
-            };
-            
-            const preferred = preferredVoices[lang] || [];
-            
-            // 先找優先語音
-            for (let name of preferred) {
-                let voice = voices.find(v => 
-                    v.name.includes(name) || v.lang.includes(name)
-                );
-                if (voice) return voice;
-            }
-            
-            // 找語言匹配的
-            let shortLang = lang.split('-')[0];
-            return voices.find(v => v.lang === lang) || 
-                   voices.find(v => v.lang.startsWith(shortLang));
-        }
 
         function speakText(btn, lang) {
             // 先停止所有播放
@@ -379,79 +329,37 @@
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
             
-            // 找出是第幾個卡片
+            // 找出是第幾個卡片（0-4）
             let card = btn.closest('.artifact-card');
             let allCards = document.querySelectorAll('.artifact-card');
-            let cardIndex = Array.from(allCards).indexOf(card) + 1;
+            let cardIndex = Array.from(allCards).indexOf(card);
             
-            // 中文使用 MP3 檔案
-            if (lang === 'zh-TW' && zhAudioFiles[cardIndex]) {
-                currentAudio = new Audio(zhAudioFiles[cardIndex]);
+            // 取得對應的音檔
+            let audioFile = audioFiles[lang] && audioFiles[lang][cardIndex];
+            
+            if (audioFile) {
+                currentAudio = new Audio(audioFile);
                 currentAudio.onended = function() {
                     btn.style.opacity = "1";
                     currentAudio = null;
                 };
                 currentAudio.onerror = function() {
                     btn.style.opacity = "1";
-                    // 如果 MP3 播放失敗，fallback 到語音合成
-                    speakWithSynthesis(btn, lang);
+                    alert('音檔載入失敗');
                 };
-                currentAudio.play().catch(function() {
-                    speakWithSynthesis(btn, lang);
+                currentAudio.play().catch(function(e) {
+                    btn.style.opacity = "1";
+                    console.log('播放失敗:', e);
                 });
-                return;
             }
-            
-            // 英文和日文使用語音合成
-            speakWithSynthesis(btn, lang);
-        }
-        
-        function speakWithSynthesis(btn, lang) {
-            let text = btn.parentElement.nextElementSibling.innerText;
-            
-            // 建立語音
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
-            
-            // 依語言調整語速和音調，讓聲音更自然
-            if (lang === 'zh-TW') {
-                utterance.rate = 0.85;  // 中文稍慢一點
-                utterance.pitch = 1.1;  // 音調稍高，更有活力
-            } else if (lang === 'ja-JP') {
-                utterance.rate = 0.9;
-                utterance.pitch = 1.05;
-            } else {
-                utterance.rate = 0.95;
-                utterance.pitch = 1.0;
-            }
-            
-            // 選擇最佳語音
-            let voice = getBestVoice(lang);
-            if (voice) {
-                utterance.voice = voice;
-            }
-            
-            utterance.onend = function() {
-                btn.style.opacity = "1";
-            };
-            
-            utterance.onerror = function() {
-                btn.style.opacity = "1";
-            };
-            
-            // 播放
-            window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
-            // 停止 MP3
             if (currentAudio) {
                 currentAudio.pause();
                 currentAudio.currentTime = 0;
                 currentAudio = null;
             }
-            // 停止語音合成
-            window.speechSynthesis.cancel();
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
         }
