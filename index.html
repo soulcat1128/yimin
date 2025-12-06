@@ -15,17 +15,19 @@
 
         body {
             font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
-            background-color: var(--bg-color);
+            background-color: var(--card-bg); /* 手機上背景改成白色，視覺更乾淨 */
             color: var(--text-color);
             line-height: 1.7;
             margin: 0;
-            padding: 20px;
-            padding-bottom: 100px;
+            padding: 0; /* 手機上不需要 padding */
+            padding-bottom: 80px;
         }
 
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 100%; /* 手機上滿版 */
+            margin: 0;
+            padding: 15px;
+            box-sizing: border-box;
         }
 
         header {
@@ -60,13 +62,13 @@
             margin: 0 auto; /* 圖片置中 */
             
             /* --- 圖片大小控制區 --- */
-            width: 100%;      /* 手機上預設寬度 */
-            max-width: 70%;   /* 限制最大寬度為 70%，讓圖片看起來比較小 */
+            width: 100%;      /* 滿版寬度 */
+            max-width: 100%;  /* 手機上圖片滿版 */
             height: auto;     /* 高度自動 */
             /* ------------------- */
             
             border-bottom: 1px solid #eee;
-            padding-top: 20px; /* 圖片上方留點白邊比較好看 */
+            padding: 0; /* 移除 padding，讓圖片更大 */
         }
 
         .content-padding {
@@ -153,15 +155,36 @@
             transform: scale(0.9);
         }
 
-        /* 手機版微調：手機上圖片可以稍微大一點，不然太小看不清 */
+        /* 手機版微調 */
         @media (max-width: 600px) {
-            body { padding: 15px; padding-bottom: 90px; }
-            .content-padding { padding: 20px; }
+            .content-padding { padding: 18px; }
             header h1 { font-size: 1.5rem; }
-            .artifact-title { font-size: 1.3rem; }
-            
-            /* 手機版圖片寬度改為 90%，避免太小 */
-            .artifact-image { max-width: 90%; }
+            .artifact-title { font-size: 1.2rem; }
+            .lang-section { padding: 12px; }
+            .stop-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+        /* 電腦版：維持置中版面和灰色背景 */
+        @media (min-width: 601px) {
+            body {
+                background-color: var(--bg-color);
+                padding: 20px;
+            }
+            .container {
+                max-width: 800px;
+                margin: 0 auto;
+                padding: 0;
+            }
+            .artifact-image {
+                max-width: 70%;
+                padding-top: 20px;
+            }
         }
     </style>
 </head>
@@ -288,30 +311,116 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        function speakText(btn, lang) {
-            window.speechSynthesis.cancel();
+        // 使用 Google Translate TTS（不需要安裝語音包）
+        function speakWithGoogle(text, lang) {
+            // Google TTS 語言代碼轉換
+            const langMap = {
+                'zh-TW': 'zh-TW',
+                'en-US': 'en',
+                'ja-JP': 'ja'
+            };
+            const googleLang = langMap[lang] || lang;
+            
+            // Google TTS 有字數限制，需要分段
+            const maxLength = 200;
+            const chunks = [];
+            let remaining = text;
+            
+            while (remaining.length > 0) {
+                if (remaining.length <= maxLength) {
+                    chunks.push(remaining);
+                    break;
+                }
+                // 找到合適的斷點（句號、逗號等）
+                let splitIndex = remaining.lastIndexOf('。', maxLength);
+                if (splitIndex === -1) splitIndex = remaining.lastIndexOf('、', maxLength);
+                if (splitIndex === -1) splitIndex = remaining.lastIndexOf('.', maxLength);
+                if (splitIndex === -1) splitIndex = remaining.lastIndexOf(',', maxLength);
+                if (splitIndex === -1) splitIndex = maxLength;
+                
+                chunks.push(remaining.substring(0, splitIndex + 1));
+                remaining = remaining.substring(splitIndex + 1);
+            }
+            
+            return chunks.map(chunk => {
+                const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${googleLang}&client=tw-ob`;
+                return new Audio(url);
+            });
+        }
 
+        let currentAudios = [];
+        let currentIndex = 0;
+
+        function speakText(btn, lang) {
+            // 停止之前的播放
+            stopSpeech();
+            
             let text = btn.parentElement.nextElementSibling.innerText;
             
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
-            
+            // 更新按鈕狀態
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
+            
+            // 使用 Google TTS
+            currentAudios = speakWithGoogle(text, lang);
+            currentIndex = 0;
+            
+            function playNext() {
+                if (currentIndex < currentAudios.length) {
+                    currentAudios[currentIndex].onended = playNext;
+                    currentAudios[currentIndex].onerror = function() {
+                        // 如果 Google TTS 失敗，回退到瀏覽器內建語音
+                        console.log('Google TTS 失敗，使用瀏覽器內建語音');
+                        fallbackToWebSpeech(text, lang, btn);
+                    };
+                    currentAudios[currentIndex].play();
+                    currentIndex++;
+                } else {
+                    btn.style.opacity = "1";
+                }
+            }
+            
+            playNext();
+        }
 
+        // 備用：使用瀏覽器內建語音
+        function fallbackToWebSpeech(text, lang, btn) {
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            
+            let voices = window.speechSynthesis.getVoices();
+            let voice = voices.find(v => v.lang === lang) || 
+                        voices.find(v => v.lang.startsWith(lang.split('-')[0]));
+            if (voice) utterance.voice = voice;
+            
             utterance.onend = function() {
                 btn.style.opacity = "1";
             };
-
+            
             window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
+            // 停止 Google TTS
+            currentAudios.forEach(audio => {
+                audio.pause();
+                audio.currentTime = 0;
+            });
+            currentAudios = [];
+            currentIndex = 0;
+            
+            // 停止瀏覽器內建語音
             window.speechSynthesis.cancel();
+            
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
         }
+
+        // 預先載入語音列表
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
     </script>
 </body>
 </html>
