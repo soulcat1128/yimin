@@ -128,7 +128,7 @@
 
         p {
             margin: 0;
-            text-align: justify;
+            text-align: left; /* 改為靠左對齊，避免英文字間距過大 */
         }
 
         .stop-btn {
@@ -311,46 +311,10 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        // 使用 Google Translate TTS（不需要安裝語音包）
-        function speakWithGoogle(text, lang) {
-            // Google TTS 語言代碼轉換
-            const langMap = {
-                'zh-TW': 'zh-TW',
-                'en-US': 'en',
-                'ja-JP': 'ja'
-            };
-            const googleLang = langMap[lang] || lang;
-            
-            // Google TTS 有字數限制，需要分段
-            const maxLength = 200;
-            const chunks = [];
-            let remaining = text;
-            
-            while (remaining.length > 0) {
-                if (remaining.length <= maxLength) {
-                    chunks.push(remaining);
-                    break;
-                }
-                // 找到合適的斷點（句號、逗號等）
-                let splitIndex = remaining.lastIndexOf('。', maxLength);
-                if (splitIndex === -1) splitIndex = remaining.lastIndexOf('、', maxLength);
-                if (splitIndex === -1) splitIndex = remaining.lastIndexOf('.', maxLength);
-                if (splitIndex === -1) splitIndex = remaining.lastIndexOf(',', maxLength);
-                if (splitIndex === -1) splitIndex = maxLength;
-                
-                chunks.push(remaining.substring(0, splitIndex + 1));
-                remaining = remaining.substring(splitIndex + 1);
-            }
-            
-            return chunks.map(chunk => {
-                const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(chunk)}&tl=${googleLang}&client=tw-ob`;
-                return new Audio(url);
-            });
-        }
-
         let currentAudios = [];
         let currentIndex = 0;
 
+        // 優先使用瀏覽器內建語音（手機支援較好）
         function speakText(btn, lang) {
             // 停止之前的播放
             stopSpeech();
@@ -362,47 +326,35 @@
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
             
-            // 使用 Google TTS
-            currentAudios = speakWithGoogle(text, lang);
-            currentIndex = 0;
-            
-            function playNext() {
-                if (currentIndex < currentAudios.length) {
-                    currentAudios[currentIndex].onended = playNext;
-                    currentAudios[currentIndex].onerror = function() {
-                        // 如果 Google TTS 失敗，回退到瀏覽器內建語音
-                        console.log('Google TTS 失敗，使用瀏覽器內建語音');
-                        fallbackToWebSpeech(text, lang, btn);
-                    };
-                    currentAudios[currentIndex].play();
-                    currentIndex++;
-                } else {
-                    btn.style.opacity = "1";
-                }
-            }
-            
-            playNext();
-        }
-
-        // 備用：使用瀏覽器內建語音
-        function fallbackToWebSpeech(text, lang, btn) {
+            // 使用瀏覽器內建語音
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
             
+            // 嘗試找到最佳語音
             let voices = window.speechSynthesis.getVoices();
             let voice = voices.find(v => v.lang === lang) || 
                         voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-            if (voice) utterance.voice = voice;
+            if (voice) {
+                utterance.voice = voice;
+            }
             
             utterance.onend = function() {
                 btn.style.opacity = "1";
+            };
+            
+            utterance.onerror = function() {
+                btn.style.opacity = "1";
+                console.log('語音播放失敗');
             };
             
             window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
-            // 停止 Google TTS
+            // 停止瀏覽器內建語音
+            window.speechSynthesis.cancel();
+            
+            // 停止 Audio（如果有）
             currentAudios.forEach(audio => {
                 audio.pause();
                 audio.currentTime = 0;
@@ -410,17 +362,20 @@
             currentAudios = [];
             currentIndex = 0;
             
-            // 停止瀏覽器內建語音
-            window.speechSynthesis.cancel();
-            
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
         }
 
-        // 預先載入語音列表
-        window.speechSynthesis.onvoiceschanged = function() {
+        // 預先載入語音列表（重要！某些瀏覽器需要）
+        if ('speechSynthesis' in window) {
+            // 立即嘗試取得
             window.speechSynthesis.getVoices();
-        };
+            
+            // 監聽語音載入完成
+            window.speechSynthesis.onvoiceschanged = function() {
+                window.speechSynthesis.getVoices();
+            };
+        }
     </script>
 </body>
 </html>
