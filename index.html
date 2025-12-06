@@ -312,6 +312,16 @@
 
     <script>
         let voices = [];
+        let currentAudio = null;
+        
+        // 中文音檔對應（之後可以擴充為 5 個檔案）
+        const zhAudioFiles = {
+            1: 'zh.mp3',  // 目前只有一個檔案，之後可改為 zh-1.mp3, zh-2.mp3 等
+            2: 'zh.mp3',
+            3: 'zh.mp3',
+            4: 'zh.mp3',
+            5: 'zh.mp3'
+        };
         
         // 載入語音
         function loadVoices() {
@@ -361,15 +371,43 @@
         }
 
         function speakText(btn, lang) {
-            // 先停止
-            window.speechSynthesis.cancel();
-            
-            let text = btn.parentElement.nextElementSibling.innerText;
+            // 先停止所有播放
+            stopSpeech();
             
             // 更新按鈕
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
+            
+            // 找出是第幾個卡片
+            let card = btn.closest('.artifact-card');
+            let allCards = document.querySelectorAll('.artifact-card');
+            let cardIndex = Array.from(allCards).indexOf(card) + 1;
+            
+            // 中文使用 MP3 檔案
+            if (lang === 'zh-TW' && zhAudioFiles[cardIndex]) {
+                currentAudio = new Audio(zhAudioFiles[cardIndex]);
+                currentAudio.onended = function() {
+                    btn.style.opacity = "1";
+                    currentAudio = null;
+                };
+                currentAudio.onerror = function() {
+                    btn.style.opacity = "1";
+                    // 如果 MP3 播放失敗，fallback 到語音合成
+                    speakWithSynthesis(btn, lang);
+                };
+                currentAudio.play().catch(function() {
+                    speakWithSynthesis(btn, lang);
+                });
+                return;
+            }
+            
+            // 英文和日文使用語音合成
+            speakWithSynthesis(btn, lang);
+        }
+        
+        function speakWithSynthesis(btn, lang) {
+            let text = btn.parentElement.nextElementSibling.innerText;
             
             // 建立語音
             let utterance = new SpeechSynthesisUtterance(text);
@@ -406,6 +444,13 @@
         }
 
         function stopSpeech() {
+            // 停止 MP3
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            // 停止語音合成
             window.speechSynthesis.cancel();
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
