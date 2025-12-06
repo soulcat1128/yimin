@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>開鑿基石的採礦科 | The Foundation of Mining</title>
+    <!-- ResponsiveVoice 語音服務（免費版） -->
+    <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
     <style>
         :root {
             --primary-color: #2c3e50;
@@ -311,10 +313,13 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        let currentAudios = [];
-        let currentIndex = 0;
+        // 語言對應 ResponsiveVoice 的語音名稱
+        const voiceMap = {
+            'zh-TW': 'Chinese Taiwan Female',
+            'en-US': 'US English Female',
+            'ja-JP': 'Japanese Female'
+        };
 
-        // 優先使用瀏覽器內建語音（手機支援較好）
         function speakText(btn, lang) {
             // 停止之前的播放
             stopSpeech();
@@ -326,55 +331,39 @@
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
             
-            // 使用瀏覽器內建語音
+            // 使用 ResponsiveVoice（音質較好）
+            let voiceName = voiceMap[lang] || 'US English Female';
+            
+            responsiveVoice.speak(text, voiceName, {
+                onend: function() {
+                    btn.style.opacity = "1";
+                },
+                onerror: function() {
+                    btn.style.opacity = "1";
+                    // 如果 ResponsiveVoice 失敗，回退到瀏覽器內建語音
+                    fallbackSpeak(text, lang, btn);
+                }
+            });
+        }
+
+        // 備用：瀏覽器內建語音
+        function fallbackSpeak(text, lang, btn) {
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            
-            // 嘗試找到最佳語音
-            let voices = window.speechSynthesis.getVoices();
-            let voice = voices.find(v => v.lang === lang) || 
-                        voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-            if (voice) {
-                utterance.voice = voice;
-            }
-            
-            utterance.onend = function() {
-                btn.style.opacity = "1";
-            };
-            
-            utterance.onerror = function() {
-                btn.style.opacity = "1";
-                console.log('語音播放失敗');
-            };
-            
+            utterance.onend = function() { btn.style.opacity = "1"; };
             window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
+            // 停止 ResponsiveVoice
+            if (typeof responsiveVoice !== 'undefined') {
+                responsiveVoice.cancel();
+            }
             // 停止瀏覽器內建語音
             window.speechSynthesis.cancel();
             
-            // 停止 Audio（如果有）
-            currentAudios.forEach(audio => {
-                audio.pause();
-                audio.currentTime = 0;
-            });
-            currentAudios = [];
-            currentIndex = 0;
-            
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
-        }
-
-        // 預先載入語音列表（重要！某些瀏覽器需要）
-        if ('speechSynthesis' in window) {
-            // 立即嘗試取得
-            window.speechSynthesis.getVoices();
-            
-            // 監聽語音載入完成
-            window.speechSynthesis.onvoiceschanged = function() {
-                window.speechSynthesis.getVoices();
-            };
         }
     </script>
 </body>
