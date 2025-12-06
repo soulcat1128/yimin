@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開鑿基石的採礦科 | The Foundation of Mining</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #c0392b;
+            --bg-color: #f4f4f9;
+            --card-bg: #ffffff;
+            --text-color: #333;
+        }
+
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.7;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 100px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #ddd;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        header p {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .artifact-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            margin-bottom: 40px;
+            overflow: hidden;
+            text-align: center; /* 讓圖片區塊置中 */
+        }
+
+        .artifact-image {
+            display: block;
+            margin: 0 auto; /* 圖片置中 */
+            
+            /* --- 圖片大小控制區 --- */
+            width: 100%;      /* 手機上預設寬度 */
+            max-width: 70%;   /* 限制最大寬度為 70%，讓圖片看起來比較小 */
+            height: auto;     /* 高度自動 */
+            /* ------------------- */
+            
+            border-bottom: 1px solid #eee;
+            padding-top: 20px; /* 圖片上方留點白邊比較好看 */
+        }
+
+        .content-padding {
+            padding: 25px;
+            text-align: left; /* 文字維持靠左 */
+        }
+
+        .artifact-title {
+            font-size: 1.4rem;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-color);
+            padding-left: 15px;
+            font-weight: 700;
+        }
+
+        .lang-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+        }
+
+        .lang-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .lang-label {
+            font-weight: bold;
+            color: #555;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .speak-btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: background 0.2s;
+        }
+
+        .speak-btn:active {
+            transform: scale(0.95);
+        }
+
+        p {
+            margin: 0;
+            text-align: justify;
+        }
+
+        .stop-btn {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 1000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.2s;
+        }
+        
+        .stop-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* 手機版微調：手機上圖片可以稍微大一點，不然太小看不清 */
+        @media (max-width: 600px) {
+            body { padding: 15px; padding-bottom: 90px; }
+            .content-padding { padding: 20px; }
+            header h1 { font-size: 1.5rem; }
+            .artifact-title { font-size: 1.3rem; }
+            
+            /* 手機版圖片寬度改為 90%，避免太小 */
+            .artifact-image { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>開鑿基石的採礦科</h1>
+            <p>The Foundation of Mining / 礎を築いた採鉱科</p>
+        </header>
+
+        <div class="artifact-card">
+            <img src="1-intro.png" alt="採礦科簡介" class="artifact-image">
+            <div class="content-padding">
+                <h2 class="artifact-title">1. 採礦科簡介</h2>
+                
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">中文</span><button class="speak-btn" onclick="speakText(this, 'zh-TW')">🔊 播放</button></div>
+                    <p>本校於 1937 年（日治時期）成立「採礦科」，是當時最晚設立的五年制學科。根據校友回憶，採礦科的學生每天上課時間比其他科多一小時，因為他們必須學習採礦機器、電機學、化學分析及測量等多種專業技能，以應對礦場的複雜需求。隨著時代演變，採礦科後來改名為礦冶工程科，並演變為今日的「材料及資源工程系」。</p>
+                </div>
+                
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">English</span><button class="speak-btn" onclick="speakText(this, 'en-US')">🔊 Play</button></div>
+                    <p>Established in 1937 during the Japanese colonial period, the "Mining Department" was the last five-year program to be founded at the school. According to alumni recollections, students in this department had one extra hour of class each day compared to other departments. This was necessary to master a wide range of skills—including mining machinery, electrical engineering, chemical analysis, and surveying—to meet the complex demands of mining sites. Over time, the department was renamed "Mining and Metallurgy Engineering" and eventually evolved into today's "Department of Materials and Mineral Resources Engineering."</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">日本語</span><button class="speak-btn" onclick="speakText(this, 'ja-JP')">🔊 再生</button></div>
+                    <p>本校は1937年（日本統治時代）に「採鉱科」を設立しました。これは当時、最後に設置された5年制の学科でした。卒業生の回想によると、採鉱科の学生は他の学科よりも毎日1時間多く授業を受けていました。これは、採鉱機械、電気工学、化学分析、測量など、鉱山現場の複雑な要求に応えるために多岐にわたる専門技術を習得する必要があったためです。時代の変遷とともに、採鉱科は後に鉱冶工学科と改称され、現在の「材料及び資源工程系（学科）」へと発展しました。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="artifact-card">
+            <img src="2-books.jpg" alt="採礦科教科書" class="artifact-image">
+            <div class="content-padding">
+                <h2 class="artifact-title">2. 採礦科教科書</h2>
+                
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">中文</span><button class="speak-btn" onclick="speakText(this, 'zh-TW')">🔊 播放</button></div>
+                    <p>展出的教科書見證了當時學生紮實的訓練。其中包括講述動力來源的《蒸氣罐》、因應礦場電氣化需求的《電氣工學》，以及由工學博士菅原公平所著、教導如何評估礦藏經濟價值的《礦山調查與評價法》。這些書籍證明了當時的礦冶工程師必須兼具機械、電機與商業管理的跨領域能力。</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">English</span><button class="speak-btn" onclick="speakText(this, 'en-US')">🔊 Play</button></div>
+                    <p>The textbooks on display testify to the rigorous training students received. They include Steam Boiler, which covers power sources; Electrical Engineering, addressing the electrification of mines; and Mine Survey and Valuation by Dr. Kohei Sugawara, which taught students how to evaluate the economic value of mineral deposits. These books demonstrate that mining engineers of that era were required to possess interdisciplinary skills spanning mechanics, electrical engineering, and business management.</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">日本語</span><button class="speak-btn" onclick="speakText(this, 'ja-JP')">🔊 再生</button></div>
+                    <p>展示されている教科書は、当時の学生が受けた厳しい訓練を物語っています。動力源について説いた『蒸気罐（ボイラー）』、鉱山の電化に対応するための『電気工学』、そして工学博士・菅原公平の著書で、鉱床の経済的価値の評価法を説いた『鉱山調査と評価法』などが含まれます。これらの書籍は、当時の鉱冶技術者が機械、電気、そして経営管理にまたがる学際的な能力を求められていたことを証明しています。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="artifact-card">
+            <img src="3-forge.jpg" alt="鍛冶工場" class="artifact-image">
+            <div class="content-padding">
+                <h2 class="artifact-title">3. 鍛冶工場實習</h2>
+                
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">中文</span><button class="speak-btn" onclick="speakText(this, 'zh-TW')">🔊 播放</button></div>
+                    <p>這張老照片標題為「鍛冶工場」，記錄了學生穿著工作服、在火爐旁進行金屬鍛造實習的場景。在偏遠的深山礦區，工具與機具若有損壞往往無法立刻送修，因此工程師必須具備「打鐵」與金屬加工的實務能力，以便能親手維修鑽頭或機具，維持礦場運作。</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">English</span><button class="speak-btn" onclick="speakText(this, 'en-US')">🔊 Play</button></div>
+                    <p>Titled "Forging Workshop," this old photograph captures students in work uniforms practicing metal forging beside a furnace. In remote mountain mining sites, damaged tools and machinery could not be easily sent out for repairs. Therefore, engineers had to possess practical skills in "blacksmithing" and metalworking to repair drill bits or machinery themselves, ensuring the mine continued to operate.</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">日本語</span><button class="speak-btn" onclick="speakText(this, 'ja-JP')">🔊 再生</button></div>
+                    <p>「鍛冶工場」と題されたこの古い写真は、作業服を着た学生たちが炉のそばで金属鍛造の実習を行っている様子を記録しています。人里離れた深い山奥の鉱山では、道具や機械が破損してもすぐに修理に出すことができませんでした。そのため、技術者は自らドリルや機械を修理し、鉱山の操業を維持できるよう、「鍛冶（かじ）」や金属加工の実務能力を身につける必要がありました。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="artifact-card">
+            <img src="4-meter.jpg" alt="熱電高溫計" class="artifact-image">
+            <div class="content-padding">
+                <h2 class="artifact-title">4. 熱電高溫計 (島津製作所)</h2>
+                
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">中文</span><button class="speak-btn" onclick="speakText(this, 'zh-TW')">🔊 播放</button></div>
+                    <p>這是一台利用「溫差電效應」測量高溫的精密儀器，其木製外殼在塑膠尚未普及的年代，提供了絕佳的絕緣與保護。值得注意的是，此儀器由日本著名的「島津製作所」製造。該公司創立於 1875 年，創辦人島津源藏受明治維新「文明開化」影響，將原本的佛壇製造轉型為科學儀器研發。島津家致力於科學實驗，曾創下製造日本第一台醫療用 X 光機與有人氫氣球的紀錄。這台儀器不僅是教學設備，更承載了島津製作所「以科學技術貢獻社會」的歷史精神。</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">English</span><button class="speak-btn" onclick="speakText(this, 'en-US')">🔊 Play</button></div>
+                    <p>This precision instrument uses the "thermoelectric effect" to measure high temperatures. Its wooden casing offered excellent insulation and protection in an era before plastic was widespread. Notably, it was manufactured by the renowned Shimadzu Corporation. Founded in 1875 by Genzo Shimadzu, the company pivoted from making Buddhist altars to scientific instruments, inspired by the Meiji Restoration's drive for "Civilization and Enlightenment." Shimadzu represents a legacy of innovation, having created Japan's first medical X-ray machine and manned balloon. This artifact is not just a tool; it embodies the spirit of scientific contribution.</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">日本語</span><button class="speak-btn" onclick="speakText(this, 'ja-JP')">🔊 再生</button></div>
+                    <p>これは「ゼーベック効果」を利用して高温を測定する精密機器です。プラスチックが普及していない時代、木製の外装は優れた絶縁性と保護機能を提供しました。特筆すべきは、これが著名な「島津製作所」製であることです。1875年創業の同社は、初代・島津源蔵が明治の「文明開化」に触発され、仏壇製造から理化学機器の製造へと転身したことに始まります。日本初の医療用X線装置や有人気球の製造など、数々の記録を打ち立てた島津製作所。この機器は単なる教材ではなく、「科学技術で社会に貢献する」という同社の創業精神を今に伝えています。</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="artifact-card">
+            <img src="5-elements.jpg" alt="金屬元素標示盤盒" class="artifact-image">
+            <div class="content-padding">
+                <h2 class="artifact-title">5. 金屬元素標示盤盒</h2>
+                
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">中文</span><button class="speak-btn" onclick="speakText(this, 'zh-TW')">🔊 播放</button></div>
+                    <p>由「京都科學標本」製造的教學用具，盒內收藏了 24 種不同的金屬元素標本（如銀、鋁、銅、鐵等）。每個試管內都細心地塞入了棉花，這在當時有兩個重要功能：一是作為防震緩衝，避免搬運時撞破玻璃；二是隔絕空氣，防止金屬氧化變質。這些細節讓百年前的標本至今仍能保存完好。</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">English</span><button class="speak-btn" onclick="speakText(this, 'en-US')">🔊 Play</button></div>
+                    <p>Manufactured by "Kyoto Scientific Specimens," this educational tool contains 24 different metal element specimens (such as silver, aluminum, copper, and iron). Cotton was carefully inserted into each test tube, serving two critical functions at the time: acting as a shock absorber to prevent the glass from breaking during transport, and isolating the metals from air to prevent oxidation. These details have allowed these century-old specimens to remain in excellent condition today.</p>
+                </div>
+
+                <div class="lang-section">
+                    <div class="lang-header"><span class="lang-label">日本語</span><button class="speak-btn" onclick="speakText(this, 'ja-JP')">🔊 再生</button></div>
+                    <p>「京都科学標本」によって製造された教材で、箱の中には24種類の異なる金属元素標本（銀、アルミニウム、銅、鉄など）が収められています。各試験管には綿が丁寧に詰められていますが、これには当時、二つの重要な機能がありました。一つは運搬時の衝撃でガラスが割れるのを防ぐクッションの役割、もう一つは空気を遮断し、金属の酸化・変質を防ぐ役割です。これらの細やかな配慮により、百年前の標本が今もなお完全な状態で保存されています。</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
+
+    <script>
+        function speakText(btn, lang) {
+            window.speechSynthesis.cancel();
+
+            let text = btn.parentElement.nextElementSibling.innerText;
+            
+            let utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = lang;
+            
+            let allBtns = document.querySelectorAll('.speak-btn');
+            allBtns.forEach(b => b.style.opacity = "1");
+            btn.style.opacity = "0.5";
+
+            utterance.onend = function() {
+                btn.style.opacity = "1";
+            };
+
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function stopSpeech() {
+            window.speechSynthesis.cancel();
+            let allBtns = document.querySelectorAll('.speak-btn');
+            allBtns.forEach(b => b.style.opacity = "1");
+        }
+    </script>
+</body>
+</html>
