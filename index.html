@@ -311,70 +311,81 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        let voices = [];
-        
-        // 載入語音列表
-        function loadVoices() {
-            voices = window.speechSynthesis.getVoices();
-            console.log('載入語音數量:', voices.length);
-        }
-        
-        // 初始化語音
-        if ('speechSynthesis' in window) {
-            loadVoices();
-            if (speechSynthesis.onvoiceschanged !== undefined) {
-                speechSynthesis.onvoiceschanged = loadVoices;
-            }
-        }
+        let currentAudio = null;
+
+        // 語言對應 VoiceRSS 的語言代碼
+        const langMap = {
+            'zh-TW': 'zh-tw',
+            'en-US': 'en-us', 
+            'ja-JP': 'ja-jp'
+        };
 
         function speakText(btn, lang) {
             // 停止之前的播放
-            window.speechSynthesis.cancel();
+            stopSpeech();
             
             let text = btn.parentElement.nextElementSibling.innerText;
             
             // 更新按鈕狀態
             let allBtns = document.querySelectorAll('.speak-btn');
-            allBtns.forEach(b => {
-                b.style.opacity = "1";
-                b.textContent = b.textContent.replace('⏸', '🔊');
-            });
+            allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
+            btn.disabled = true;
             
-            // 建立語音
+            // 使用 VoiceRSS API（免費版）
+            const apiKey = 'c79d2d4269c44d3a8cd0f8fa78a4e6b0'; // 免費 API Key
+            const voiceLang = langMap[lang] || 'en-us';
+            
+            const url = `https://api.voicerss.org/?key=${apiKey}&hl=${voiceLang}&src=${encodeURIComponent(text)}&c=MP3&f=16khz_16bit_mono`;
+            
+            currentAudio = new Audio(url);
+            
+            currentAudio.onended = function() {
+                btn.style.opacity = "1";
+                btn.disabled = false;
+            };
+            
+            currentAudio.onerror = function() {
+                console.log('VoiceRSS 失敗，使用瀏覽器內建語音');
+                btn.disabled = false;
+                fallbackSpeak(text, lang, btn);
+            };
+            
+            currentAudio.play().catch(function(error) {
+                console.log('播放失敗:', error);
+                btn.disabled = false;
+                fallbackSpeak(text, lang, btn);
+            });
+        }
+
+        // 備用：瀏覽器內建語音
+        function fallbackSpeak(text, lang, btn) {
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.9; // 稍微慢一點，更清楚
-            utterance.pitch = 1;
+            utterance.rate = 0.9;
             
-            // 嘗試找到最佳語音
-            if (voices.length > 0) {
-                let voice = voices.find(v => v.lang === lang) || 
-                            voices.find(v => v.lang.startsWith(lang.split('-')[0]));
-                if (voice) {
-                    utterance.voice = voice;
-                    console.log('使用語音:', voice.name);
-                }
-            }
-            
-            utterance.onend = function() {
-                btn.style.opacity = "1";
+            utterance.onend = function() { 
+                btn.style.opacity = "1"; 
             };
             
-            utterance.onerror = function(e) {
-                console.log('語音錯誤:', e);
-                btn.style.opacity = "1";
-                alert('語音播放失敗，請確認手機沒有開啟靜音模式');
-            };
-            
-            // 播放
             window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
+            // 停止 Audio
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
+            // 停止瀏覽器內建語音
             window.speechSynthesis.cancel();
+            
             let allBtns = document.querySelectorAll('.speak-btn');
-            allBtns.forEach(b => b.style.opacity = "1");
+            allBtns.forEach(b => {
+                b.style.opacity = "1";
+                b.disabled = false;
+            });
         }
     </script>
 </body>
