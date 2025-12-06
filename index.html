@@ -328,14 +328,25 @@
                 voices = window.speechSynthesis.getVoices();
             }
             
+            // 優先選擇的語音名稱（包含微軟高品質語音）
             const preferredVoices = {
-                'zh-TW': ['Mei-Jia', 'Ting-Ting', 'zh-TW', 'zh_TW'],
-                'en-US': ['Samantha', 'Karen', 'Daniel', 'en-US', 'en_US', 'en-GB'],
-                'ja-JP': ['Kyoko', 'O-Ren', 'ja-JP', 'ja_JP', 'ja']
+                'zh-TW': [
+                    'Microsoft Hanhan',      // Windows 繁中女聲（較自然）
+                    'Microsoft Yating',      // Windows 繁中女聲
+                    'Microsoft Zhiwei',      // Windows 繁中男聲
+                    'Xiaoxiao',              // 微軟曉曉（非常自然）
+                    'Yunxi',                 // 微軟雲希
+                    'Mei-Jia',               // iPhone 繁中
+                    'Ting-Ting',             // iPhone 簡中
+                    'zh-TW', 'zh_TW', 'zh-CN', 'zh'
+                ],
+                'en-US': ['Samantha', 'Karen', 'Daniel', 'Microsoft Zira', 'en-US', 'en_US', 'en-GB'],
+                'ja-JP': ['Kyoko', 'O-Ren', 'Microsoft Haruka', 'ja-JP', 'ja_JP', 'ja']
             };
             
             const preferred = preferredVoices[lang] || [];
             
+            // 先找優先語音
             for (let name of preferred) {
                 let voice = voices.find(v => 
                     v.name.includes(name) || v.lang.includes(name)
@@ -343,6 +354,7 @@
                 if (voice) return voice;
             }
             
+            // 找語言匹配的
             let shortLang = lang.split('-')[0];
             return voices.find(v => v.lang === lang) || 
                    voices.find(v => v.lang.startsWith(shortLang));
