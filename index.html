@@ -311,82 +311,48 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        let currentAudio = null;
-
-        // 語言對應 VoiceRSS 的語言代碼
-        const langMap = {
-            'zh-TW': 'zh-tw',
-            'en-US': 'en-us', 
-            'ja-JP': 'ja-jp'
-        };
-
+        // 簡單可靠的語音播放
         function speakText(btn, lang) {
-            // 停止之前的播放
-            stopSpeech();
+            // 先停止之前的
+            window.speechSynthesis.cancel();
             
+            // 取得文字
             let text = btn.parentElement.nextElementSibling.innerText;
             
             // 更新按鈕狀態
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
-            btn.disabled = true;
             
-            // 使用 VoiceRSS API（免費版）
-            const apiKey = 'c79d2d4269c44d3a8cd0f8fa78a4e6b0'; // 免費 API Key
-            const voiceLang = langMap[lang] || 'en-us';
-            
-            const url = `https://api.voicerss.org/?key=${apiKey}&hl=${voiceLang}&src=${encodeURIComponent(text)}&c=MP3&f=16khz_16bit_mono`;
-            
-            currentAudio = new Audio(url);
-            
-            currentAudio.onended = function() {
-                btn.style.opacity = "1";
-                btn.disabled = false;
-            };
-            
-            currentAudio.onerror = function() {
-                console.log('VoiceRSS 失敗，使用瀏覽器內建語音');
-                btn.disabled = false;
-                fallbackSpeak(text, lang, btn);
-            };
-            
-            currentAudio.play().catch(function(error) {
-                console.log('播放失敗:', error);
-                btn.disabled = false;
-                fallbackSpeak(text, lang, btn);
-            });
-        }
-
-        // 備用：瀏覽器內建語音
-        function fallbackSpeak(text, lang, btn) {
+            // 建立語音
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.9;
+            utterance.rate = 0.85;  // 稍慢一點
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
             
-            utterance.onend = function() { 
-                btn.style.opacity = "1"; 
+            utterance.onend = function() {
+                btn.style.opacity = "1";
             };
             
-            window.speechSynthesis.speak(utterance);
+            utterance.onerror = function(e) {
+                btn.style.opacity = "1";
+            };
+            
+            // 延遲一下再播放（某些手機需要）
+            setTimeout(function() {
+                window.speechSynthesis.speak(utterance);
+            }, 100);
         }
 
         function stopSpeech() {
-            // 停止 Audio
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio = null;
-            }
-            // 停止瀏覽器內建語音
             window.speechSynthesis.cancel();
-            
             let allBtns = document.querySelectorAll('.speak-btn');
-            allBtns.forEach(b => {
-                b.style.opacity = "1";
-                b.disabled = false;
-            });
+            allBtns.forEach(b => b.style.opacity = "1");
         }
+        
+        // 預載語音（重要！）
+        window.speechSynthesis.getVoices();
     </script>
 </body>
 </html>
