@@ -311,97 +311,70 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        let currentAudio = null;
+        let voices = [];
         
-        // Google Translate TTS 語言代碼
-        const langMap = {
-            'zh-TW': 'zh-TW',
-            'en-US': 'en',
-            'ja-JP': 'ja'
-        };
+        // 載入並儲存語音列表
+        function loadVoices() {
+            voices = window.speechSynthesis.getVoices();
+        }
+        
+        // 初始化
+        loadVoices();
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        
+        // 找到最佳語音
+        function getBestVoice(lang) {
+            if (voices.length === 0) {
+                voices = window.speechSynthesis.getVoices();
+            }
+            
+            // 優先選擇的語音名稱（iPhone 上較好的語音）
+            const preferredVoices = {
+                'zh-TW': ['Mei-Jia', 'Ting-Ting', 'zh-TW', 'zh_TW'],
+                'en-US': ['Samantha', 'Karen', 'Daniel', 'en-US', 'en_US', 'en-GB'],
+                'ja-JP': ['Kyoko', 'O-Ren', 'ja-JP', 'ja_JP', 'ja']
+            };
+            
+            const preferred = preferredVoices[lang] || [];
+            
+            // 先找優先語音
+            for (let name of preferred) {
+                let voice = voices.find(v => 
+                    v.name.includes(name) || v.lang.includes(name)
+                );
+                if (voice) return voice;
+            }
+            
+            // 找語言匹配的
+            let shortLang = lang.split('-')[0];
+            return voices.find(v => v.lang === lang) || 
+                   voices.find(v => v.lang.startsWith(shortLang));
+        }
 
         function speakText(btn, lang) {
-            // 停止之前的播放
-            stopSpeech();
+            // 先停止
+            window.speechSynthesis.cancel();
             
-            // 取得文字
             let text = btn.parentElement.nextElementSibling.innerText;
             
-            // 更新按鈕狀態
+            // 更新按鈕
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
             
-            // 中文用瀏覽器內建（iPhone 中文很好）
-            // 英文和日文用 Google Translate TTS
-            if (lang === 'zh-TW') {
-                speakWithBrowser(text, lang, btn);
-            } else {
-                speakWithGoogle(text, lang, btn);
-            }
-        }
-        
-        // 用 Google Translate TTS 播放（英文、日文）
-        function speakWithGoogle(text, lang, btn) {
-            const googleLang = langMap[lang] || 'en';
-            
-            // Google TTS 有長度限制，需要分段（約 200 字）
-            const maxLen = 200;
-            let chunks = [];
-            let remaining = text;
-            
-            while (remaining.length > 0) {
-                if (remaining.length <= maxLen) {
-                    chunks.push(remaining);
-                    break;
-                }
-                // 找斷點
-                let idx = remaining.lastIndexOf('。', maxLen);
-                if (idx === -1) idx = remaining.lastIndexOf('.', maxLen);
-                if (idx === -1) idx = remaining.lastIndexOf('、', maxLen);
-                if (idx === -1) idx = remaining.lastIndexOf(',', maxLen);
-                if (idx === -1) idx = remaining.lastIndexOf(' ', maxLen);
-                if (idx === -1 || idx === 0) idx = maxLen;
-                
-                chunks.push(remaining.substring(0, idx + 1));
-                remaining = remaining.substring(idx + 1).trim();
-            }
-            
-            let currentIdx = 0;
-            
-            function playNext() {
-                if (currentIdx >= chunks.length) {
-                    btn.style.opacity = "1";
-                    return;
-                }
-                
-                const chunk = chunks[currentIdx];
-                const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${googleLang}&client=tw-ob&q=${encodeURIComponent(chunk)}`;
-                
-                currentAudio = new Audio(url);
-                currentAudio.onended = function() {
-                    currentIdx++;
-                    playNext();
-                };
-                currentAudio.onerror = function() {
-                    // Google TTS 失敗，改用瀏覽器內建
-                    speakWithBrowser(text, lang, btn);
-                };
-                currentAudio.play().catch(function() {
-                    speakWithBrowser(text, lang, btn);
-                });
-            }
-            
-            playNext();
-        }
-        
-        // 用瀏覽器內建語音播放（中文）
-        function speakWithBrowser(text, lang, btn) {
-            window.speechSynthesis.cancel();
-            
+            // 建立語音
             let utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = lang;
-            utterance.rate = 0.85;
+            utterance.rate = 0.9;
+            utterance.pitch = 1.0;
+            
+            // 選擇最佳語音
+            let voice = getBestVoice(lang);
+            if (voice) {
+                utterance.voice = voice;
+            }
             
             utterance.onend = function() {
                 btn.style.opacity = "1";
@@ -411,27 +384,15 @@
                 btn.style.opacity = "1";
             };
             
-            setTimeout(function() {
-                window.speechSynthesis.speak(utterance);
-            }, 100);
+            // 播放
+            window.speechSynthesis.speak(utterance);
         }
 
         function stopSpeech() {
-            // 停止 Audio
-            if (currentAudio) {
-                currentAudio.pause();
-                currentAudio.currentTime = 0;
-                currentAudio = null;
-            }
-            // 停止瀏覽器內建
             window.speechSynthesis.cancel();
-            
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
         }
-        
-        // 預載語音
-        window.speechSynthesis.getVoices();
     </script>
 </body>
 </html>
