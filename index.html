@@ -311,85 +311,90 @@
     <button class="stop-btn" onclick="stopSpeech()" title="停止 / Stop">⏹</button>
 
     <script>
-        let voices = [];
+        let currentAudio = null;
         
-        // 載入並儲存語音列表
-        function loadVoices() {
-            voices = window.speechSynthesis.getVoices();
-        }
-        
-        // 初始化
-        loadVoices();
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
-        
-        // 找到最佳語音
-        function getBestVoice(lang) {
-            if (voices.length === 0) {
-                voices = window.speechSynthesis.getVoices();
-            }
-            
-            // 優先選擇的語音名稱（iPhone 上較好的語音）
-            const preferredVoices = {
-                'zh-TW': ['Mei-Jia', 'Ting-Ting', 'zh-TW', 'zh_TW'],
-                'en-US': ['Samantha', 'Karen', 'Daniel', 'en-US', 'en_US', 'en-GB'],
-                'ja-JP': ['Kyoko', 'O-Ren', 'ja-JP', 'ja_JP', 'ja']
-            };
-            
-            const preferred = preferredVoices[lang] || [];
-            
-            // 先找優先語音
-            for (let name of preferred) {
-                let voice = voices.find(v => 
-                    v.name.includes(name) || v.lang.includes(name)
-                );
-                if (voice) return voice;
-            }
-            
-            // 找語言匹配的
-            let shortLang = lang.split('-')[0];
-            return voices.find(v => v.lang === lang) || 
-                   voices.find(v => v.lang.startsWith(shortLang));
-        }
+        // 語言代碼對應 Google TTS
+        const langMap = {
+            'zh-TW': 'zh-TW',
+            'en-US': 'en',
+            'ja-JP': 'ja'
+        };
 
         function speakText(btn, lang) {
-            // 先停止
-            window.speechSynthesis.cancel();
+            // 先停止之前的播放
+            stopSpeech();
             
             let text = btn.parentElement.nextElementSibling.innerText;
             
-            // 更新按鈕
+            // 更新按鈕狀態
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
             btn.style.opacity = "0.5";
             
-            // 建立語音
-            let utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = lang;
-            utterance.rate = 0.9;
-            utterance.pitch = 1.0;
+            // 使用 Google Translate TTS
+            let ttsLang = langMap[lang] || 'zh-TW';
             
-            // 選擇最佳語音
-            let voice = getBestVoice(lang);
-            if (voice) {
-                utterance.voice = voice;
+            // 文字太長需要分段（Google TTS 有長度限制約 200 字元）
+            let chunks = splitText(text, 180);
+            playChunks(chunks, ttsLang, btn, 0);
+        }
+        
+        // 分割文字
+        function splitText(text, maxLen) {
+            let chunks = [];
+            let sentences = text.split(/(?<=[。．.！!？?])/);
+            let current = '';
+            
+            for (let s of sentences) {
+                if ((current + s).length > maxLen && current.length > 0) {
+                    chunks.push(current.trim());
+                    current = s;
+                } else {
+                    current += s;
+                }
+            }
+            if (current.trim()) {
+                chunks.push(current.trim());
             }
             
-            utterance.onend = function() {
+            return chunks.length > 0 ? chunks : [text];
+        }
+        
+        // 依序播放分段
+        function playChunks(chunks, lang, btn, index) {
+            if (index >= chunks.length) {
                 btn.style.opacity = "1";
+                return;
+            }
+            
+            let chunk = chunks[index];
+            let url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${lang}&client=tw-ob&q=${encodeURIComponent(chunk)}`;
+            
+            currentAudio = new Audio(url);
+            currentAudio.playbackRate = 0.95;
+            
+            currentAudio.onended = function() {
+                playChunks(chunks, lang, btn, index + 1);
             };
             
-            utterance.onerror = function() {
+            currentAudio.onerror = function() {
                 btn.style.opacity = "1";
+                console.log('播放錯誤，嘗試下一段');
+                playChunks(chunks, lang, btn, index + 1);
             };
             
-            // 播放
-            window.speechSynthesis.speak(utterance);
+            currentAudio.play().catch(function(e) {
+                console.log('無法播放:', e);
+                btn.style.opacity = "1";
+            });
         }
 
         function stopSpeech() {
-            window.speechSynthesis.cancel();
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+                currentAudio = null;
+            }
             let allBtns = document.querySelectorAll('.speak-btn');
             allBtns.forEach(b => b.style.opacity = "1");
         }
