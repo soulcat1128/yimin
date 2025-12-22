@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>大稻埕散步導覽</title>
+    <style>
+        :root {
+            /* ★ 配色調整區 ★ */
+            
+            /* 1. 站點標籤顏色 (焦糖奶茶色) */
+            --primary-brick: #cda581;   
+
+            /* 其他通用設定 */
+            --warm-bg: #f9f9f7;            /* 奶油暖白背景 */
+            --card-white: #ffffff;         /* 卡片純白 */
+            --text-main: #3d3630;          /* 深暖灰文字 */
+            --text-sub: #8a817c;           /* 輔助灰文字 */
+            --border-soft: #ece8e1;        /* 柔和邊框 */
+            --nav-height: 65px;
+            
+            /* 按鈕統一樣式變數 (淺灰底、深灰字) */
+            --btn-bg-gray: #f0efed;
+            --btn-text-gray: #555555;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+            background-color: var(--warm-bg);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.7;
+            padding-bottom: calc(var(--nav-height) + 30px);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* 頂部 Header */
+        header {
+            background-color: rgba(249, 249, 247, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--border-soft);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
+
+        .lang-switch select {
+            background: #fff; border: 1px solid var(--border-soft); padding: 6px 12px;
+            border-radius: 20px; font-size: 0.85rem; color: var(--text-sub); font-weight: 600; outline: none;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* 分頁切換動畫 */
+        .tab-content { display: none; animation: fadeIn 0.4s ease-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 卡片設計 */
+        .card {
+            background: var(--card-white);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 15px rgba(61, 54, 48, 0.04);
+            border: 1px solid var(--border-soft);
+            position: relative;
+        }
+
+        /* 站點標籤：維持 #cda581 */
+        .station-label {
+            display: inline-block; 
+            background-color: var(--primary-brick); 
+            color: #ffffff; 
+            font-size: 0.8rem; 
+            font-weight: 700; 
+            padding: 6px 14px; 
+            border-radius: 20px;
+            margin-bottom: 15px; 
+            letter-spacing: 1px;
+            box-shadow: 0 3px 6px rgba(205, 165, 129, 0.4); 
+        }
+
+        .card h2 { margin: 0 0 12px 0; font-size: 1.5rem; font-weight: 800; color: var(--text-main); }
+
+        .info-row { display: flex; align-items: flex-start; margin-bottom: 8px; font-size: 0.9rem; color: var(--text-sub); }
+        /* 圖標顏色跟隨站點標籤，保持一致性 */
+        .info-icon { margin-right: 10px; color: var(--primary-brick); opacity: 0.8; width: 18px; text-align: center; }
+
+        .desc { 
+            margin-top: 20px; font-size: 0.95rem; color: #5a524d; 
+            text-align: justify; line-height: 1.8; padding-top: 15px;
+            border-top: 1px dashed var(--border-soft);
+        }
+
+        /* 按鈕區 */
+        .actions { margin-top: 25px; display: flex; gap: 12px; }
+        
+        /* 統一按鈕基礎樣式 */
+        .btn {
+            flex: 1; padding: 14px; border-radius: 14px; text-decoration: none;
+            font-weight: 700; font-size: 0.95rem; display: flex; align-items: center;
+            justify-content: center; gap: 6px; transition: all 0.2s ease;
+            
+            /* 這裡設定導航與通話共用的顏色 */
+            background-color: var(--btn-bg-gray); 
+            color: var(--btn-text-gray);
+        }
+
+        .btn:active { transform: scale(0.96); opacity: 0.9; background-color: #e5e4e2; }
+
+        /* 影音區塊 */
+        .video-container {
+            width: 100%; border-radius: 15px; overflow: hidden;
+            background: #222; margin-bottom: 15px; aspect-ratio: 16/9;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        video { width: 100%; height: 100%; object-fit: contain; }
+
+        /* 底部導覽列 */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            height: var(--nav-height); background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px); border-top: 1px solid var(--border-soft); 
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 999; padding-bottom: env(safe-area-inset-bottom);
+        }
+        .nav-item {
+            flex: 1; text-align: center; color: #b5ada6;
+            font-size: 0.7rem; cursor: pointer; padding: 8px 0;
+            transition: all 0.3s; -webkit-tap-highlight-color: transparent;
+        }
+        /* 底部選單啟用色：跟隨標籤顏色 */
+        .nav-item.active { color: var(--primary-brick); font-weight: 800; } 
+        .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
+
+    </style>
+</head>
+<body>
+
+<header>
+    <h1 id="page-title">大稻埕散步</h1>
+    <div class="lang-switch">
+        <select id="langSelect" onchange="changeLanguage()">
+            <option value="zh">繁體中文</option>
+            <option value="en">English</option>
+            <option value="jp">日本語</option>
+            <option value="kr">한국어</option>
+        </select>
+    </div>
+</header>
+
+<div class="container">
+    <div id="tab-spots" class="tab-content active">
+        <div id="spots-list"></div>
+    </div>
+    <div id="tab-videos" class="tab-content">
+        <div id="videos-list"></div>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('spots')">
+        <span class="nav-icon">📍</span>
+        <span id="nav-label-spots">景點導覽</span>
+    </div>
+    <div class="nav-item" onclick="switchTab('videos')">
+        <span class="nav-icon">🎥</span>
+        <span id="nav-label-videos">影音紀錄</span>
+    </div>
+</nav>
+
+<script>
+    // 1. 介面文字
+    const uiLabels = {
+        zh: { title: "大稻埕散步", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", stopPrefix: "第 ", stopSuffix: " 站" },
+        en: { title: "Dadaocheng Walk", map: "Map", call: "Call", navSpots: "Spots", navVideos: "Videos", stopPrefix: "Stop ", stopSuffix: "" },
+        jp: { title: "大稲埕散策", map: "地図", call: "電話", navSpots: "スポット", navVideos: "動画", stopPrefix: "No. ", stopSuffix: "" },
+        kr: { title: "다다오청 산책", map: "지도", call: "전화", navSpots: "명소", navVideos: "비디오", stopPrefix: "No. ", stopSuffix: "" }
+    };
+
+    // 2. 景點資料
+    const spotsData = [
+        {
+            id: "visitor",
+            zh: { name: "大稻埕遊客中心", address: "103臺北市大同區迪化街一段44號", phone: "02 2559 6802", hours: "09:00 - 18:00", desc: "座落於迪化街入口處。提供復古場景攝影棚及1920年代服飾租借服務，是體驗大稻埕風貌的第一站。" },
+            en: { name: "Visitor Center", address: "No. 44, Sec. 1, Dihua St.", phone: "02 2559 6802", hours: "09:00 - 18:00", desc: "Located at the entrance. Offers retro photo studios and 1920s costume rentals. The perfect starting point." },
+            jp: { name: "ビジターセンター", address: "台北市大同区迪化街一段44号", phone: "02 2559 6802", hours: "09:00 - 18:00", desc: "レトロな撮影スタジオがあり、1920年代の衣装レンタルも体験できる観光の起点です。" },
+            kr: { name: "방문자 센터", address: "타이베이시 다퉁구 디화제 1단 44호", phone: "02 2559 6802", hours: "09:00 - 18:00", desc: "복고풍 스튜디오와 의상 대여 서비스를 제공하여 다다오청을 체험하기 좋은 첫 코스입니다." }
+        },
+        {
+            id: "yongle",
+            zh: { name: "永樂市場", address: "103臺北市大同區迪化街一段21號", phone: "02 2558 8846", hours: "10:00 - 16:00 (週日休)", desc: "臺灣最大的布料集散地。一樓有知名美食，二三樓是布料愛好者的天堂，八九樓為大稻埕戲苑。" },
+            en: { name: "Yongle Market", address: "No. 21, Sec. 1, Dihua St.", phone: "02 2558 8846", hours: "10:00 - 16:00 (Closed Sun)", desc: "Taiwan's largest fabric hub. 1F has local food; 2F-3F are a paradise for fabric lovers." },
+            jp: { name: "永楽市場", address: "台北市大同区迪化街一段21号", phone: "02 2558 8846", hours: "10:00 - 16:00 (日曜定休)", desc: "台湾最大の布市場。1階はグルメ、2・3階は布地や手芸用品が豊富に揃っています。" },
+            kr: { name: "융러 시장", address: "타이베이시 다퉁구 디화제 1단 21호", phone: "02 2558 8846", hours: "10:00 - 16:00 (일요일 휴무)", desc: "대만 최대 원단 시장. 1층은 맛집, 2-3층은 다양한 원단을 판매합니다." }
+        },
+        {
+            id: "watson",
+            zh: { name: "屈臣氏大藥房", address: "103臺北市大同區迪化街一段34號", phone: "", hours: "依店鋪而異", desc: "1917年建成的市定古蹟。現為「小藝埕」，包含書店、復古咖啡廳與藝文展演空間。" },
+            en: { name: "AS Watson & Co.", address: "No. 34, Sec. 1, Dihua St.", phone: "", hours: "Varies", desc: "Historic landmark built in 1917. Now features a bookstore, retro cafe, and art space." },
+            jp: { name: "屈臣氏大薬房", address: "台北市大同区迪化街一段34号", phone: "", hours: "店舗による", desc: "1917年建設の史跡。書店、レトロなカフェ、アートスペースが入る複合施設です。" },
+            kr: { name: "왓슨스 대약방", address: "타이베이시 다퉁구 디화제 1단 34호", phone: "", hours: "점포별 상이", desc: "1917년 건축된 고적. 현재는 서점, 레트로 카페, 예술 공간으로 운영됩니다." }
+        },
+        {
+            id: "herb",
+            zh: { name: "姚德和 青草號", address: "103臺北市大同區民樂街55號57號", phone: "02 2558 9510", hours: "08:30 - 18:30 (週日 - 17:00)", desc: "創立於1946年的老字號。堅守傳統古法熬煮涼茶與青草茶，是消暑的首選。" },
+            en: { name: "Yao de Herb", address: "No. 55-57, Minle St.", phone: "02 2558 9510", hours: "08:30 - 18:30 (Sun - 17:00)", desc: "Established in 1946. Traditional herbal teas brewed with ancient methods." },
+            jp: { name: "姚徳和青草号", address: "台北市大同区民楽街55-57号", phone: "02 2558 9510", hours: "08:30 - 18:30 (日曜 - 17:00)", desc: "1946年創業。伝統製法の青草茶（ハーブティー）は散策のお供に最適です。" },
+            kr: { name: "야오더허 칭차오하오", address: "타이베이시 다퉁구 민러제 55-57호", phone: "02 2558 9510", hours: "08:30 - 18:30 (일요일 - 17:00)", desc: "1946년 창립. 전통 방식으로 끓인 시원한 약초차가 유명합니다." }
+        },
+        {
+            id: "temple",
+            zh: { name: "台北霞海城隍廟", address: "103臺北市大同區迪化街一段61號", phone: "02 2558 0346", hours: "07:00 - 19:00", desc: "建立於1859年，為直轄市定古蹟。其中的月下老人以祈求良緣靈驗聞名海內外。" },
+            en: { name: "City God Temple", address: "No. 61, Sec. 1, Dihua St.", phone: "02 2558 0346", hours: "07:00 - 19:00", desc: "Built in 1859. Famous for the Matchmaker God (Yue Lao) for those seeking love." },
+            jp: { name: "霞海城隍廟", address: "台北市大同区迪化街一段61号", phone: "02 2558 0346", hours: "07:00 - 19:00", desc: "1859年建立。縁結びの神様「月下老人」が有名で、多くの参拝者が訪れます。" },
+            kr: { name: "하해성황묘", address: "타이베이시 다퉁구 디화제 1단 61호", phone: "02 2558 0346", hours: "07:00 - 19:00", desc: "1859년 건립. 인연을 맺어주는 '월하노인'이 영험하기로 유명합니다." }
+        },
+        {
+            id: "bookstore",
+            zh: { name: "郭怡美書店", address: "103臺北市大同區迪化街一段129號", phone: "02 2550 8291", hours: "12:00 - 20:00", desc: "百年洋樓老宅，前身為郭怡美商行。成功轉化為結合獨立書店與咖啡館的文化空間。" },
+            en: { name: "Guo Yi Mei Bookstore", address: "No. 129, Sec. 1, Dihua St.", phone: "02 2550 8291", hours: "12:00 - 20:00", desc: "A century-old mansion turned into an independent bookstore and cafe." },
+            jp: { name: "郭怡美書店", address: "台北市大同区迪化街一段129号", phone: "02 2550 8291", hours: "12:00 - 20:00", desc: "百年の歴史を持つ商家をリノベーションした、美しい書店兼カフェです。" },
+            kr: { name: "궈이메이 서점", address: "타이베이시 다퉁구 디화제 1단 129호", phone: "02 2550 8291", hours: "12:00 - 20:00", desc: "백 년 된 상점을 개조한 고풍스러운 독립 서점 겸 카페입니다." }
+        },
+        {
+            id: "backer",
+            zh: { name: "貝殼好室", address: "103臺北市大同區迪化街一段155號", phone: "02 2550 9366", hours: "11:00 - 19:00 (週一休)", desc: "經典的三進式街屋。將百年老屋活化為集資產品展示場域、咖啡餐飲與共享空間。" },
+            en: { name: "BackerHouse", address: "No. 155, Sec. 1, Dihua St.", phone: "02 2550 9366", hours: "11:00 - 19:00 (Closed Mon)", desc: "Classic townhouse combining crowdfunding product displays, cafe, and co-working space." },
+            jp: { name: "BackerHouse", address: "台北市大同区迪化街一段155号", phone: "02 2550 9366", hours: "11:00 - 19:00 (月曜定休)", desc: "伝統家屋でクラウドファンディング商品を展示・販売するカフェ＆スペース。" },
+            kr: { name: "베이커 하우스", address: "타이베이시 다퉁구 디화제 1단 155호", phone: "02 2550 9366", hours: "11:00 - 19:00 (월요일 휴무)", desc: "전통 가옥을 개조하여 크라우드 펀딩 제품을 전시하는 복합 문화 공간." }
+        },
+        {
+            id: "ten",
+            zh: { name: "十連棟", address: "103臺北市大同區迪化街一段362號", phone: "02 2557 3606", hours: "11:00 - 21:00", desc: "1912年建造，由十棟巴洛克式紅磚洋樓組成，見證了當年碾米業的興盛。" },
+            en: { name: "Ten Buildings", address: "No. 362, Sec. 1, Dihua St.", phone: "02 2557 3606", hours: "11:00 - 21:00", desc: "Ten continuous Baroque red brick buildings. A mix of historic facades and modern architecture." },
+            jp: { name: "十連棟", address: "台北市大同区迪化街一段362号", phone: "02 2557 3606", hours: "11:00 - 21:00", desc: "バロック様式の赤レンガ建物が10棟連なるスポット。新旧の建築が融合しています。" },
+            kr: { name: "십연동", address: "타이베이시 다퉁구 디화제 1단 362호", phone: "02 2557 3606", hours: "11:00 - 21:00", desc: "10개의 붉은 벽돌 건물이 이어진 곳. 옛 외관과 현대 건축이 공존합니다." }
+        }
+    ];
+
+    // 3. 影片資料 (請確認影片檔名為 my_video.mp4)
+    const videoInfo = {
+        src: "my_video.mp4", 
+        zh: { title: "大稻埕漫遊紀錄", desc: "透過鏡頭記錄大稻埕的新舊交織，感受百年老街的獨特魅力。" },
+        en: { title: "Dadaocheng Vlog", desc: "Walking through the historic alleys of Dadaocheng." },
+        jp: { title: "大稲埕散歩記録", desc: "大稲埕の路地裏を歩き、新旧が融合した雰囲気を感じる。" },
+        kr: { title: "다다오청 산책 기록", desc: "다다오청의 역사적인 골목을 걸으며 독특한 분위기를 느껴보세요." }
+    };
+
+    function renderContent(lang) {
+        const labels = uiLabels[lang];
+        document.getElementById('page-title').innerText = labels.title;
+        document.getElementById('nav-label-spots').innerText = labels.navSpots;
+        document.getElementById('nav-label-videos').innerText = labels.navVideos;
+
+        // 渲染景點列表
+        const spotsContainer = document.getElementById('spots-list');
+        spotsContainer.innerHTML = '';
+        spotsData.forEach((spot, index) => {
+            const data = spot[lang];
+            const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
+            
+            let phoneBtn = '';
+            if (data.phone) {
+                // 通話按鈕現在使用共用的 .btn 樣式 (灰色)，不再有特殊色
+                phoneBtn = `<a href="tel:${data.phone.replace(/ /g, '')}" class="btn">📞 ${labels.call}</a>`;
+            }
+
+            spotsContainer.innerHTML += `
+                <div class="card">
+                    <div class="station-label">${labels.stopPrefix}${index + 1}${labels.stopSuffix}</div>
+                    <h2>${data.name}</h2>
+                    <div class="info-row"><span class="info-icon">📍</span><span>${data.address}</span></div>
+                    <div class="info-row"><span class="info-icon">🕒</span><span>${data.hours}</span></div>
+                    <div class="desc">${data.desc}</div>
+                    <div class="actions">
+                        <a href="${mapUrl}" target="_blank" class="btn">🗺️ ${labels.map}</a>
+                        ${phoneBtn}
+                    </div>
+                </div>`;
+        });
+
+        // 渲染影片區塊
+        const videoData = videoInfo[lang];
+        const videosContainer = document.getElementById('videos-list');
+        videosContainer.innerHTML = `
+            <div class="card">
+                <h2>${videoData.title}</h2>
+                <div class="video-container">
+                    <video controls playsinline>
+                        <source src="${videoInfo.src}" type="video/mp4">
+                        您的瀏覽器不支援影片播放，請確認影片檔案是否為 my_video.mp4 且放在同一資料夾。
+                    </video>
+                </div>
+                <div class="desc">${videoData.desc}</div>
+            </div>`;
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-' + tabName).classList.add('active');
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+        if(tabName === 'spots') document.querySelectorAll('.nav-item')[0].classList.add('active');
+        if(tabName === 'videos') document.querySelectorAll('.nav-item')[1].classList.add('active');
+        window.scrollTo(0, 0);
+    }
+
+    function changeLanguage() {
+        renderContent(document.getElementById('langSelect').value);
+    }
+
+    // 初始化頁面
+    renderContent('zh');
+</script>
+
+</body>
+</html>
