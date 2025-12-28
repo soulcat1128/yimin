@@ -112,14 +112,13 @@
         }
         .btn:active { transform: scale(0.96); background-color: #efedeb; }
 
-        /* 影片區塊 - 保持 16:9 比例 */
+        /* 影片區塊 */
         .video-container {
             width: 100%; border-radius: 15px; overflow: hidden;
             background: #222; margin-bottom: 15px; aspect-ratio: 16/9;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
             position: relative;
         }
-        /* ★修改處：讓 iframe 也能充滿容器 */
         video, .video-container iframe { 
             width: 100%; 
             height: 100%; 
@@ -127,7 +126,7 @@
             border: 0; 
         }
 
-        /* 地圖用的樣式 (隱藏黑邊) */
+        /* 地圖用的樣式 */
         .map-clean-container {
             width: 100%;
             height: 450px;           
@@ -144,6 +143,28 @@
             border: 0;
             margin-top: -80px;       
             height: calc(100% + 60px); 
+            display: block;
+        }
+        
+        /* --- 電子書裁切核心樣式 --- */
+        .ebook-wrapper {
+            width: 100%;
+            height: 430px;         /* 這是您網頁上看到的實際視窗高度 */
+            border-radius: 15px;
+            overflow: hidden;      /* 關鍵：把超出這個框框的內容(廣告)切掉 */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: #fff;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .ebook-wrapper iframe {
+            width: 100%;
+            /* 將 iframe 高度拉長，把下方的工具列擠出去 */
+            height: calc(100% + 110px); 
+            /* 將 iframe 往上拉，把上方的廣告條藏起來 */
+            margin-top: -38px;          
+            border: none;
             display: block;
         }
 
@@ -195,10 +216,26 @@
 <script>
     // 1. 介面文字
     const uiLabels = {
-        zh: { title: "大稻埕散步", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", stopPrefix: "第 ", stopSuffix: " 站", mapCardTitle: "景點地圖" },
-        en: { title: "Dadaocheng Walk", map: "Map", call: "Call", navSpots: "Spots", navVideos: "Videos", stopPrefix: "Stop ", stopSuffix: "", mapCardTitle: "Attractions Map" },
-        jp: { title: "大稲埕散策", map: "地図", call: "電話", navSpots: "スポット", navVideos: "動画", stopPrefix: "No. ", stopSuffix: "", mapCardTitle: "観光マップ" },
-        kr: { title: "다다오청 산책", map: "지도", call: "전화", navSpots: "명소", navVideos: "비디오", stopPrefix: "No. ", stopSuffix: "", mapCardTitle: "관광 지도" }
+        zh: { 
+            title: "大稻埕散步", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", 
+            stopPrefix: "第 ", stopSuffix: " 站", mapCardTitle: "景點地圖",
+            ebookTitle: "導覽手冊電子書", ebookDesc: "歡迎線上翻閱詳細的導覽手冊。"
+        },
+        en: { 
+            title: "Dadaocheng Walk", map: "Map", call: "Call", navSpots: "Spots", navVideos: "Videos", 
+            stopPrefix: "Stop ", stopSuffix: "", mapCardTitle: "Attractions Map",
+            ebookTitle: "Guidebook E-Book", ebookDesc: "Tap to view our detailed guidebook online."
+        },
+        jp: { 
+            title: "大稲埕散策", map: "地図", call: "電話", navSpots: "スポット", navVideos: "動画", 
+            stopPrefix: "No. ", stopSuffix: "", mapCardTitle: "観光マップ",
+            ebookTitle: "ガイドブック電子書籍", ebookDesc: "詳細なガイドブックをオンラインで閲覧できます。"
+        },
+        kr: { 
+            title: "다다오청 산책", map: "지도", call: "전화", navSpots: "명소", navVideos: "비디오", 
+            stopPrefix: "No. ", stopSuffix: "", mapCardTitle: "관광 지도",
+            ebookTitle: "가이드북 전자책", ebookDesc: "자세한 가이드북을 온라인으로 확인하세요."
+        }
     };
 
     // 2. 景點資料
@@ -271,7 +308,6 @@
 
     // 3. 影片資料
     const videoInfo = {
-        // src 屬性不再需要，因為我們直接嵌入 YouTube
         zh: { title: "大稻埕漫遊紀錄", desc: "透過鏡頭記錄大稻埕的新舊交織，感受百年老街的獨特魅力。" },
         en: { title: "Dadaocheng Vlog", desc: "Walking through the historic alleys of Dadaocheng." },
         jp: { title: "大稲埕散歩記録", desc: "新舊が融合した大稲埕の雰囲気を感じる動画。" },
@@ -312,7 +348,7 @@
                 </div>`;
         });
 
-        // --- 渲染影音與地圖 ---
+        // --- 渲染影音與地圖 (包含電子書) ---
         const videoData = videoInfo[lang];
         const videosContainer = document.getElementById('videos-list');
         
@@ -345,6 +381,19 @@
                 <div class="desc">
                     ${lang === 'zh' ? '點擊地圖標記查看詳細資訊。' : 'Tap markers for details.'}
                 </div>
+            </div>
+            
+            <div class="card">
+                <h2>${labels.ebookTitle}</h2>
+                <div class="ebook-wrapper">
+                   <iframe 
+                        frameborder="0" 
+                        allowtransparency="true" 
+                        allowFullscreen="true" 
+                        src="https://online.visual-paradigm.com/share/book/organized-2evfrnjt7q?p=1">
+                   </iframe>
+                </div>
+                <div class="desc">${labels.ebookDesc}</div>
             </div>`;
     }
 
