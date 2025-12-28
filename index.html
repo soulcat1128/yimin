@@ -146,12 +146,13 @@
             display: block;
         }
         
-        /* --- 電子書裁切核心樣式 --- */
+        /* --- 電子書裁切 (手機版優化) --- */
         .ebook-wrapper {
             width: 100%;
-            height: 430px;         /* 這是您網頁上看到的實際視窗高度 */
+            /* 預設電腦版高度 */
+            height: 480px;         
             border-radius: 15px;
-            overflow: hidden;      /* 關鍵：把超出這個框框的內容(廣告)切掉 */
+            overflow: hidden;      
             box-shadow: 0 4px 10px rgba(0,0,0,0.05);
             background: #fff;
             margin-bottom: 15px;
@@ -160,12 +161,26 @@
         
         .ebook-wrapper iframe {
             width: 100%;
-            /* 將 iframe 高度拉長，把下方的工具列擠出去 */
-            height: calc(100% + 110px); 
-            /* 將 iframe 往上拉，把上方的廣告條藏起來 */
-            margin-top: -38px;          
             border: none;
             display: block;
+            
+            /* 電腦版設定：拉高並上移 */
+            height: calc(100% + 110px); 
+            margin-top: -60px;          
+        }
+
+        /* ★手機版專屬調整 (螢幕寬度小於 768px 時觸發) */
+        @media screen and (max-width: 768px) {
+            .ebook-wrapper {
+                /* 改用相對高度：佔螢幕高度的 65%，讓電子書有足夠長度 */
+                height: 65vh; 
+            }
+            .ebook-wrapper iframe {
+                /* 手機上廣告條可能較小，稍微減少上移幅度，避免切到內容 */
+                margin-top: -55px; 
+                /* 確保底部工具列不會被切掉 */
+                height: calc(100% + 110px); 
+            }
         }
 
         /* 底部導覽列 */
