@@ -6,12 +6,11 @@
     <title>大稻埕散步導覽</title>
     <style>
         :root {
-            /* ★ 顏色比例調整 ★ */
-            --label-bg: #d2b48c;          /* 第幾站：焦糖大地色 (明顯) */
-            --btn-bg-soft: #f7f5f2;      /* 按鈕背景：極淺米灰色 (淡) */
-            --btn-text-soft: #7a736e;    /* 按鈕文字：中性灰 (淡) */
-            
-            --warm-bg: #f9f9f7;           /* 暖白底色 */
+            /* 視覺設定：大地色系 */
+            --label-bg: #d2b48c;          
+            --btn-bg-soft: #f7f5f2;      
+            --btn-text-soft: #7a736e;    
+            --warm-bg: #f9f9f7;           
             --card-white: #ffffff;
             --text-main: #3d3630;
             --text-sub: #8a817c;
@@ -102,7 +101,7 @@
             border-top: 1px dashed var(--border-soft);
         }
 
-        /* 按鈕區：顏色調淺 */
+        /* 按鈕區 */
         .actions { margin-top: 25px; display: flex; gap: 12px; }
         .btn {
             flex: 1; padding: 13px; border-radius: 14px; text-decoration: none;
@@ -113,13 +112,14 @@
         }
         .btn:active { transform: scale(0.96); background-color: #efedeb; }
 
-        /* 影片區 */
+        /* 影片與地圖區塊 - 保持 16:9 比例 */
         .video-container {
             width: 100%; border-radius: 15px; overflow: hidden;
             background: #222; margin-bottom: 15px; aspect-ratio: 16/9;
             box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            position: relative;
         }
-        video { width: 100%; height: 100%; object-fit: contain; }
+        video, iframe { width: 100%; height: 100%; object-fit: contain; border: 0; }
 
         /* 底部導覽列 */
         .bottom-nav {
@@ -132,7 +132,6 @@
         .nav-item { flex: 1; text-align: center; color: #b5ada6; font-size: 0.7rem; cursor: pointer; padding: 8px 0; }
         .nav-item.active { color: var(--label-bg); font-weight: 800; } 
         .nav-icon { font-size: 1.4rem; display: block; margin-bottom: 2px; }
-
     </style>
 </head>
 <body>
@@ -170,13 +169,13 @@
 <script>
     // 1. 介面文字
     const uiLabels = {
-        zh: { title: "大稻埕散步", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", stopPrefix: "第 ", stopSuffix: " 站" },
-        en: { title: "Dadaocheng Walk", map: "Map", call: "Call", navSpots: "Spots", navVideos: "Videos", stopPrefix: "Stop ", stopSuffix: "" },
-        jp: { title: "大稲埕散策", map: "地図", call: "電話", navSpots: "スポット", navVideos: "動画", stopPrefix: "No. ", stopSuffix: "" },
-        kr: { title: "다다오청 산책", map: "지도", call: "전화", navSpots: "명소", navVideos: "비디오", stopPrefix: "No. ", stopSuffix: "" }
+        zh: { title: "大稻埕散步", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", stopPrefix: "第 ", stopSuffix: " 站", mapCardTitle: "景點地圖" },
+        en: { title: "Dadaocheng Walk", map: "Map", call: "Call", navSpots: "Spots", navVideos: "Videos", stopPrefix: "Stop ", stopSuffix: "", mapCardTitle: "Attractions Map" },
+        jp: { title: "大稲埕散策", map: "地図", call: "電話", navSpots: "スポット", navVideos: "動画", stopPrefix: "No. ", stopSuffix: "", mapCardTitle: "観光マップ" },
+        kr: { title: "다다오청 산책", map: "지도", call: "전화", navSpots: "명소", navVideos: "비디오", stopPrefix: "No. ", stopSuffix: "", mapCardTitle: "관광 지도" }
     };
 
-    // 2. 景點資料 (共 8 個)
+    // 2. 景點資料
     const spotsData = [
         {
             id: "visitor",
@@ -259,6 +258,7 @@
         document.getElementById('nav-label-spots').innerText = labels.navSpots;
         document.getElementById('nav-label-videos').innerText = labels.navVideos;
 
+        // --- 渲染景點列表 ---
         const spotsContainer = document.getElementById('spots-list');
         spotsContainer.innerHTML = '';
         spotsData.forEach((spot, index) => {
@@ -286,15 +286,40 @@
                 </div>`;
         });
 
+        // --- 渲染影音與地圖 ---
         const videoData = videoInfo[lang];
         const videosContainer = document.getElementById('videos-list');
+        
+        // ★ 這裡已經填入您正確的嵌入連結 ★
+        const myMapUrl = "https://www.google.com/maps/d/embed?mid=1f8zgCG-6FNvEq-3z2vI9vtEvNO5v7C0&ehbc=2E312F"; 
+
         videosContainer.innerHTML = `
             <div class="card">
                 <h2>${videoData.title}</h2>
                 <div class="video-container">
-                    <video controls playsinline><source src="${videoInfo.src}" type="video/mp4"></video>
+                    <video controls playsinline>
+                        <source src="${videoInfo.src}" type="video/mp4">
+                        您的瀏覽器不支援影片播放。
+                    </video>
                 </div>
                 <div class="desc">${videoData.desc}</div>
+            </div>
+
+            <div class="card">
+                <h2>${labels.mapCardTitle}</h2>
+                <div class="video-container" style="background: #fff;">
+                    <iframe 
+                        src="${myMapUrl}" 
+                        width="100%" 
+                        height="100%" 
+                        style="border:0;" 
+                        allowfullscreen="" 
+                        loading="lazy">
+                    </iframe>
+                </div>
+                <div class="desc">
+                    ${lang === 'zh' ? '點擊地圖標記查看詳細資訊。' : 'Tap markers for details.'}
+                </div>
             </div>`;
     }
 
@@ -308,6 +333,8 @@
     }
 
     function changeLanguage() { renderContent(document.getElementById('langSelect').value); }
+    
+    // 初始化
     renderContent('zh');
 </script>
 
