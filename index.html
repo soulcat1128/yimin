@@ -26,14 +26,12 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* --- 優化 1: 移除 backdrop-filter (毛玻璃)，改用實色背景以提升手機效能 --- */
         header {
-            background-color: #f9f9f7; /* 實色背景 */
+            background-color: #f9f9f7;
             padding: 15px 20px;
             position: sticky; top: 0; z-index: 100;
             border-bottom: 1px solid var(--border-soft);
             display: flex; justify-content: space-between; align-items: center;
-            /* 移除 blur 以防止滑動卡頓 */
         }
 
         h1 { margin: 0; font-size: 1.15rem; font-weight: 800; color: var(--text-main); letter-spacing: 0.5px; }
@@ -49,13 +47,12 @@
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* 卡片設計 */
         .card {
             background: var(--card-white);
             border-radius: 20px;
             padding: 22px;
             margin-bottom: 22px;
-            box-shadow: 0 4px 10px rgba(61, 54, 48, 0.03); /* 降低陰影複雜度 */
+            box-shadow: 0 4px 10px rgba(61, 54, 48, 0.03);
             border: 1px solid var(--border-soft);
             position: relative;
         }
@@ -70,17 +67,12 @@
         }
 
         .spot-img-container {
-            width: 100%;
-            height: 190px;
-            background-color: #f2f1ef;
-            border-radius: 14px;
-            margin-bottom: 18px;
-            overflow: hidden;
+            width: 100%; height: 190px;
+            background-color: #f2f1ef; border-radius: 14px;
+            margin-bottom: 18px; overflow: hidden;
             display: flex; align-items: center; justify-content: center;
         }
-        .spot-img-container img {
-            width: 100%; height: 100%; object-fit: cover;
-        }
+        .spot-img-container img { width: 100%; height: 100%; object-fit: cover; }
 
         .card h2 { margin: 0 0 12px 0; font-size: 1.45rem; font-weight: 800; color: var(--text-main); }
         .info-row { display: flex; align-items: flex-start; margin-bottom: 8px; font-size: 0.88rem; color: var(--text-sub); }
@@ -129,11 +121,10 @@
             .ebook-wrapper iframe { margin-top: -55px; height: calc(100% + 110px); }
         }
 
-        /* --- 優化 2: 移除底部導覽列的毛玻璃 --- */
         .bottom-nav {
             position: fixed; bottom: 0; left: 0; width: 100%;
             height: var(--nav-height); 
-            background: #ffffff; /* 改用純白背景 */
+            background: #ffffff; 
             border-top: 1px solid var(--border-soft); 
             display: flex; justify-content: space-around; align-items: center;
             z-index: 999; padding-bottom: env(safe-area-inset-bottom);
@@ -176,7 +167,6 @@
 </nav>
 
 <script>
-    // 全域變數記錄當前語言
     let currentLang = 'zh';
 
     const uiLabels = {
@@ -272,11 +262,10 @@
     const videoInfo = {
         zh: { title: "大稻埕漫遊紀錄", desc: "透過鏡頭記錄大稻埕的新舊交織，感受百年老街的獨特魅力。" },
         en: { title: "Dadaocheng Vlog", desc: "Walking through the historic alleys of Dadaocheng." },
-        jp: { title: "大稲埕散歩記録", desc: "新舊が融合した大稲埕の雰囲気を感じる動画。" },
+        // ★修正了這裡：新舊 -> 新旧
+        jp: { title: "大稲埕散歩記録", desc: "新旧が融合した大稲埕の雰囲気を感じる動画。" },
         kr: { title: "다다오청 산책 기록", desc: "다다오청의 역사적인 골목을 걷는 영상." }
     };
-
-    // --- 優化 3: 分開渲染函數，避免一次載入所有東西 ---
 
     function renderInterface(lang) {
         const labels = uiLabels[lang];
@@ -288,14 +277,13 @@
     function renderSpots(lang) {
         const labels = uiLabels[lang];
         const spotsContainer = document.getElementById('spots-list');
-        spotsContainer.innerHTML = ''; // 清空舊資料
+        spotsContainer.innerHTML = ''; 
         
         spotsData.forEach((spot, index) => {
             const data = spot[lang];
             const mapUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(data.address)}`;
             let phoneBtn = data.phone ? `<a href="tel:${data.phone.replace(/ /g, '')}" class="btn">📞 ${labels.call}</a>` : '';
 
-            // 加入 loading="lazy" 讓圖片滑到才載入
             spotsContainer.innerHTML += `
                 <div class="card">
                     <div class="station-label">${labels.stopPrefix}${index + 1}${labels.stopSuffix}</div>
@@ -317,14 +305,10 @@
         });
     }
 
-    // 這個函數只有在點擊「影音紀錄」時才會執行
     function renderVideos(lang) {
         const labels = uiLabels[lang];
         const videoData = videoInfo[lang];
         const videosContainer = document.getElementById('videos-list');
-        
-        // 如果內容已經存在且是當前語言，就不重新渲染 (節省效能)
-        // 這裡為了簡化，每次切換還是重新渲染，確保語言正確
         
         const myMapUrl = "https://www.google.com/maps/d/embed?mid=1f8zgCG-6FNvEq-3z2vI9vtEvNO5v7C0&ehbc=2E312F"; 
 
@@ -380,13 +364,11 @@
         
         if(tabName === 'spots') {
             document.querySelectorAll('.nav-item')[0].classList.add('active');
-            // 當回到景點時，為了省記憶體，可以選擇清空影片區塊 (避免電子書在背景吃資源)
             document.getElementById('videos-list').innerHTML = ''; 
         }
         
         if(tabName === 'videos') {
             document.querySelectorAll('.nav-item')[1].classList.add('active');
-            // 只有點進來時才載入重型 iframe
             renderVideos(currentLang);
         }
         
@@ -398,16 +380,13 @@
         renderInterface(currentLang);
         renderSpots(currentLang);
         
-        // 如果當前正在看影片分頁，也要即時更新影片分頁的語言
         if(document.getElementById('tab-videos').classList.contains('active')){
             renderVideos(currentLang);
         }
     }
     
-    // 初始化：只載入介面和景點，不載入影片/電子書
-    currentLang = 'zh';
-    renderInterface(currentLang);
-    renderSpots(currentLang);
+    renderInterface('zh');
+    renderSpots('zh');
 </script>
 
 </body>
