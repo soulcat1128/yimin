@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>大稻埕散步導覽</title>
+    <title>永樂町走走</title>
     <style>
         :root {
             --label-bg: #d2b48c;          
@@ -112,6 +112,7 @@
             overflow: hidden; background: #fff; margin-bottom: 15px; position: relative;
         }
         .ebook-wrapper iframe {
+            /* 這裡保留了您的CSS設置，確保在手機上閱讀時不會跑版 */
             width: 100%; border: none; display: block;
             height: calc(100% + 110px); margin-top: -60px;          
         }
@@ -137,7 +138,7 @@
 <body>
 
 <header>
-    <h1 id="page-title">大稻埕散步</h1>
+    <h1 id="page-title">永樂町走走</h1>
     <div class="lang-switch">
         <select id="langSelect" onchange="changeLanguage()">
             <option value="zh">繁體中文</option>
@@ -171,7 +172,8 @@
 
     const uiLabels = {
         zh: { 
-            title: "大稻埕散步", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", 
+            // 標題已更新為「永樂町走走」
+            title: "永樂町走走", map: "導航", call: "通話", navSpots: "景點導覽", navVideos: "影音紀錄", 
             stopPrefix: "第 ", stopSuffix: " 站", mapCardTitle: "景點地圖",
             ebookTitle: "導覽手冊電子書", ebookDesc: "歡迎線上翻閱詳細的導覽手冊。"
         },
@@ -262,7 +264,6 @@
     const videoInfo = {
         zh: { title: "大稻埕漫遊紀錄", desc: "透過鏡頭記錄大稻埕的新舊交織，感受百年老街的獨特魅力。" },
         en: { title: "Dadaocheng Vlog", desc: "Walking through the historic alleys of Dadaocheng." },
-        // ★修正了這裡：新舊 -> 新旧
         jp: { title: "大稲埕散歩記録", desc: "新旧が融合した大稲埕の雰囲気を感じる動画。" },
         kr: { title: "다다오청 산책 기록", desc: "다다오청의 역사적인 골목을 걷는 영상." }
     };
@@ -345,12 +346,12 @@
             <div class="card">
                 <h2>${labels.ebookTitle}</h2>
                 <div class="ebook-wrapper">
-                   <iframe 
+                    <iframe 
                         loading="lazy"
                         frameborder="0" 
                         allowtransparency="true" 
                         allowFullscreen="true" 
-                        src="https://online.visual-paradigm.com/share/book/organized-2evfrnjt7q?p=1">
+                        src="https://online.visual-paradigm.com/share/book/organized-1--2evsisage4?p=1">
                    </iframe>
                 </div>
                 <div class="desc">${labels.ebookDesc}</div>
